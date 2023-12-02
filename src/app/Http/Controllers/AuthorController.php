@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Author;
+use App\Http\Requests\AuthorRequest;
 
 class AuthorController extends Controller
 {
@@ -18,7 +19,7 @@ class AuthorController extends Controller
         return view('add');
     }
 
-    public function create(Request $request)
+    public function create(AuthorRequest $request)
     {
         $form = $request->all();
         Author::create($form);
@@ -31,7 +32,7 @@ class AuthorController extends Controller
         return view('edit', ['form' => $author]);
     }
 
-    public function update(Request $request)
+    public function update(AuthorRequest $request)
     {
         $form = $request->all();
         unset($form['_token']);
@@ -49,5 +50,41 @@ class AuthorController extends Controller
     {
         Author::find($request->id)->delete();
         return redirect('/');
+    }
+
+    public function find()
+    {
+        return view('find', ['input' => '']);
+    }
+
+    public function search(Request $request)
+    {
+        $item = Author::where('name', 'LIKE', "%{$request->input}%")->first();
+        $param = [
+            'input' => $request->input,
+            'item' => $item
+        ];
+        return view('find', $param);
+    }
+
+    public function bind(Author $author)
+    {
+        $data = [
+            'item' => $author,
+        ];
+        return view('author.binds', $data);
+    }
+
+    public function verror()
+    {
+        return view('verror');
+    }
+
+    public function relate(Request $request)
+    {
+        $hasItems = Author::has('book')->get();
+        $noItems = Author::doesntHave('book')->get();
+        $param = ['hasItems' => $hasItems, 'noItems' => $noItems];
+        return view('author.index', $param);
     }
 }
